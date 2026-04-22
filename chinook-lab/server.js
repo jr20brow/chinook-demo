@@ -18,6 +18,45 @@ app.get('/artists', (req, res) => {
     res.json(stmt.all());
 });
 
+app.get("/artists/:id/albums", (req, res) => {
+    const stmt = db.prepare(`
+SELECT *
+FROM Album
+WHERE Album.ArtistId = ?
+`);
+    const albums = stmt.all(req.params.id);
+    if (albums.length === 0) {
+        return res.status(404).json({ error: "No albums found" });
+    }
+    res.json(albums);
+});
+
+app.get("/albums", (req, res) => {
+    const stmt = db.prepare(`
+SELECT *
+FROM Album
+`);
+    res.json(stmt.all());
+});
+
+app.get("/tracks", (req, res) => {
+    const stmt = db.prepare(`
+SELECT *
+FROM Track
+`);
+    res.json(stmt.all());
+});
+
+app.get("/tracks/long", (req, res) => {
+    const stmt = db.prepare(`
+SELECT Album.title, Track.name, Track.milliseconds
+FROM Album
+JOIN Track ON Album.AlbumId = Track.AlbumId
+WHERE Track.milliseconds > 300000
+`);
+    res.json(stmt.all());
+});
+
 
 
 app.listen(3000, () => {
