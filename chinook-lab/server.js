@@ -10,6 +10,16 @@ app.get('/tables', (req, res) => {
     );
     res.json(stmt.all());
 });
+
+app.get('/artists', (req, res) => {
+    const stmt = db.prepare(
+        "SELECT * FROM artist"
+    );
+    res.json(stmt.all());
+});
+
+
+
 app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");
 });
