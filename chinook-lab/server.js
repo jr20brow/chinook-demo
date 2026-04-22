@@ -101,6 +101,15 @@ app.post("/playlist", (req, res) => {
     });
 });
 
+app.delete("/playlists/:id", (req, res) => {
+const stmt = db.prepare("DELETE FROM Playlist WHERE PlaylistId = ?");
+const result = stmt.run(req.params.id);
+if (result.changes === 0) {
+return res.status(404).json({ error: "Playlist not found" });
+}
+res.json({ message: "Playlist deleted" });
+});
+
 app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");
 });
