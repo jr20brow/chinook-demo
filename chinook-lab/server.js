@@ -47,6 +47,14 @@ FROM Track
     res.json(stmt.all());
 });
 
+app.get("/genres", (req, res) => {
+    const stmt = db.prepare(`
+SELECT *
+FROM Genre
+`);
+    res.json(stmt.all());
+});
+
 app.get("/tracks/long", (req, res) => {
     const stmt = db.prepare(`
 SELECT Album.title, Track.name, Track.milliseconds
@@ -57,7 +65,19 @@ WHERE Track.milliseconds > 300000
     res.json(stmt.all());
 });
 
-
+app.get("/genres/:id/stats", (req, res) => {
+    const stmt = db.prepare(`
+SELECT Genre.name, COUNT(*) AS TrackCount, AVG(Track.Milliseconds) / 1000 AS LengthAverage 
+FROM Track
+JOIN Genre ON Track.GenreId = Genre.GenreId
+WHERE Genre.GenreId = ?
+`);
+    const genres = stmt.all(req.params.id);
+    if (genres.length === 0) {
+        return res.status(404).json({ error: "No albums found" });
+    }
+    res.json(genres);
+});
 
 app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");
