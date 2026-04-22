@@ -1,5 +1,6 @@
 const express = require("express");
 const { DatabaseSync } = require("node:sqlite");
+const { resourceLimits } = require("node:worker_threads");
 const db = new DatabaseSync("./Chinook_Sqlite.sqlite");
 const app = express();
 app.use(express.json());
@@ -55,6 +56,14 @@ FROM Genre
     res.json(stmt.all());
 });
 
+app.get("/playlist", (req, res) => {
+    const stmt = db.prepare(`
+SELECT *
+FROM Playlist
+`);
+    res.json(stmt.all());
+});
+
 app.get("/tracks/long", (req, res) => {
     const stmt = db.prepare(`
 SELECT Album.title, Track.name, Track.milliseconds
@@ -77,6 +86,19 @@ WHERE Genre.GenreId = ?
         return res.status(404).json({ error: "No albums found" });
     }
     res.json(genres);
+});
+
+app.post("/playlist", (req, res) => {
+    const { name } = req.body;
+    if (!name) {
+        return res.status(400).json({ error: "name is required" });
+    }
+    const stmt = db.prepare("INSERT INTO Playlist (Name) VALUES (?)");
+    const result = stmt.run(name);
+    res.status(201).json({
+        id: Number(result.lastInsertRowid),
+        name: name,
+    });
 });
 
 app.listen(3000, () => {
